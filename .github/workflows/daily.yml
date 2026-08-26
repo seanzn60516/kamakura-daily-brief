@@ -1,0 +1,46 @@
+name: Daily Brief
+
+on:
+  schedule:
+    # 22:30 UTC = 07:30 JST (日本時間は UTC+9、サマータイムなし)
+    - cron: "30 22 * * *"
+  workflow_dispatch: {} # 手動実行用ボタンもGitHub上に表示されます
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate today's content
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run generate
+
+      - name: Commit generated page
+        run: |
+          git config user.name "daily-brief-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/
+          git diff --quiet --cached || git commit -m "Update daily brief $(date -u +'%Y-%m-%d')"
+          git push
+
+      - name: Send email notification
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          PAGES_URL: ${{ secrets.PAGES_URL }}
+        run: npm run send-email
