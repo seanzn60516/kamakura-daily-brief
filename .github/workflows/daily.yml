@@ -39,8 +39,7 @@ jobs:
 
       - name: Send email notification
         env:
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
           PAGES_URL: ${{ secrets.PAGES_URL }}
         run: npm run send-email
