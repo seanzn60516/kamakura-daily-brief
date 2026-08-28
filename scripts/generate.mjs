@@ -173,7 +173,7 @@ function renderHtml({ content, trashItems }) {
   <section>
     <h2>🗑 今日のゴミ出し(植木地区)</h2>
     <ul>${trashHtml}</ul>
-    ${IS_PLACEHOLDER_DATA ? '<p class="warning">⚠️ このデータは仮設定です。公式カレンダーで確認後、正式な内容に差し替えてください。</p>' : ""}
+    // ${IS_PLACEHOLDER_DATA ? '<p class="warning">⚠️ このデータは仮設定です。公式カレンダーで確認後、正式な内容に差し替えてください。</p>' : ""}
   </section>
 
   <section>
