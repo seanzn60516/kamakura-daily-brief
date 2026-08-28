@@ -32,6 +32,12 @@ Web検索ツールを使って、実際の最新の市場ニュースを踏ま�
       {"name": "銘柄名または投資信託名", "type": "個別株 or 投資信託", "reason": "注目されている理由(客観的な事実ベース、推奨ではなく紹介として)"}
     ]
   },
+  "autonomous_driving": {
+    "summary": "今日時点での自動運転技術に関する注目トピックを2〜3文で",
+    "highlights": [
+      {"topic": "企業名・技術名・地域など短いラベル", "detail": "具体的な動向の説明(事実ベース、1〜2文)"}
+    ]
+  },
   "newborn_tip": {
     "title": "今日の育児tipsのタイトル",
     "body": "3〜4文程度の具体的で実践的な新生児の育て方tips"
@@ -45,6 +51,7 @@ Web検索ツールを使って、実際の最新の市場ニュースを踏ま�
 注意:
 - investment.picksは3件程度。特定銘柄への投資を推奨する表現は避け、「注目されている理由」を客観的に紹介する形にすること。
 - これは金融アドバイスではないことを前提とした客観的な情報提供とすること。
+- autonomous_driving.highlightsは2〜3件程度。技術・企業・法規制・事故/安全性など幅広い切り口から選ぶこと。
 - 内容は毎日変化をつけ、同じような内容の繰り返しを避けること。`;
 
 async function generateContent() {
@@ -133,6 +140,16 @@ function renderHtml({ content, trashItems }) {
 
   const trashHtml = trashItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("\n");
 
+  const drivingHtml = content.autonomous_driving.highlights
+    .map(
+      (h) => `
+      <li>
+        <strong>${escapeHtml(h.topic)}</strong><br>
+        <span class="reason">${escapeHtml(h.detail)}</span>
+      </li>`
+    )
+    .join("\n");
+
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -163,6 +180,12 @@ function renderHtml({ content, trashItems }) {
     <h2>📈 投資ピックアップ</h2>
     <p>${escapeHtml(content.investment.summary)}</p>
     <ul>${picksHtml}</ul>
+  </section>
+
+  <section>
+    <h2>🚗 自動運転技術トピック</h2>
+    <p>${escapeHtml(content.autonomous_driving.summary)}</p>
+    <ul>${drivingHtml}</ul>
   </section>
 
   <section>
