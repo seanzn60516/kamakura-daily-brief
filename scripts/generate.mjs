@@ -49,9 +49,13 @@ Web検索ツールを使って、実際の最新の市場ニュースを踏ま�
 async function generateContent() {
   const response = await anthropic.messages.create({
     model: "claude-sonnet-5",
-    max_tokens: 2000,
+    max_tokens: 4096,
     tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
-    messages: [{ role: "user", content: PROMPT }],
+    messages: [
+      { role: "user", content: PROMPT },
+      // JSON以外の前置き・後書きが混ざらないよう、"{"から続きを書かせる
+      { role: "assistant", content: "{" },
+    ],
   });
 
   const textBlocks = response.content
@@ -59,11 +63,63 @@ async function generateContent() {
     .map((block) => block.text)
     .join("\n");
 
-  const jsonMatch = textBlocks.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error("Claude APIの応答からJSONを抽出できませんでした: " + textBlocks);
+  const jsonText = "{" + textBlocks;
+  const extracted = extractFirstJsonObject(jsonText);
+  if (!extracted) {
+    console.error("--- Claude APIの生レスポンス ---");
+    console.error(jsonText);
+    console.error("--------------------------------");
+    throw new Error(
+      "Claude APIの応答から完全なJSONオブジェクトを抽出できませんでした(出力が途中で切れている可能性があります)"
+    );
   }
-  return JSON.parse(jsonMatch[0]);
+
+  try {
+    return JSON.parse(extracted);
+  } catch (err) {
+    console.error("--- パースに失敗したJSON文字列 ---");
+    console.error(extracted);
+    console.error("--------------------------------");
+    throw err;
+  }
+}
+
+// 文字列の先頭の "{" から、対応する閉じ括弧までを波括弧の対応関係を
+// 数えながら抽出する。文字列内の { } はカウントしないよう考慮する。
+function extractFirstJsonObject(text) {
+  const start = text.indexOf("{");
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escapeNext = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (ch === "{") depth++;
+    if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        return text.slice(start, i + 1);
+      }
+    }
+  }
+  return null; // 閉じ括弧まで到達しなかった = 出力が途中で切れている
 }
 
 // --- 2. HTML生成 -----------------------------------------------------
