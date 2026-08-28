@@ -23,6 +23,7 @@ const PROMPT = `あなたは日本の個人投資家・子育て中の親向け�
 Web検索ツールを使って、実際の最新の市場ニュースを踏まえてください。
 
 出力は必ず以下のJSONのみ。前後の説明文やコードブロック記号は一切付けないこと。
+検索を行った場合でも、最終的な返答メッセージは説明文を一切含まず、JSONオブジェクト1つだけにすること。
 
 {
   "investment": {
@@ -51,11 +52,7 @@ async function generateContent() {
     model: "claude-sonnet-5",
     max_tokens: 4096,
     tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
-    messages: [
-      { role: "user", content: PROMPT },
-      // JSON以外の前置き・後書きが混ざらないよう、"{"から続きを書かせる
-      { role: "assistant", content: "{" },
-    ],
+    messages: [{ role: "user", content: PROMPT }],
   });
 
   const textBlocks = response.content
@@ -63,11 +60,10 @@ async function generateContent() {
     .map((block) => block.text)
     .join("\n");
 
-  const jsonText = "{" + textBlocks;
-  const extracted = extractFirstJsonObject(jsonText);
+  const extracted = extractFirstJsonObject(textBlocks);
   if (!extracted) {
     console.error("--- Claude APIの生レスポンス ---");
-    console.error(jsonText);
+    console.error(textBlocks);
     console.error("--------------------------------");
     throw new Error(
       "Claude APIの応答から完全なJSONオブジェクトを抽出できませんでした(出力が途中で切れている可能性があります)"
