@@ -57,4 +57,4 @@ export function getTodayTrashItems(date = new Date()) {
   return items;
 }
 
-export const IS_PLACEHOLDER_DATA = true;
+export const IS_PLACEHOLDER_DATA = false;
