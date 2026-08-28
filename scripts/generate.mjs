@@ -29,13 +29,13 @@ Web検索ツールを使って、実際の最新の市場ニュースを踏ま�
   "investment": {
     "summary": "今日の市場全体の注目トピックを2〜3文で",
     "picks": [
-      {"name": "銘柄名または投資信託名", "type": "個別株 or 投資信託", "reason": "注目されている理由(客観的な事実ベース、推奨ではなく紹介として)"}
+      {"name": "銘柄名または投資信託名", "type": "個別株 or 投資信託", "reason": "注目されている理由(客観的な事実ベース、推奨ではなく紹介として)", "source_url": "情報源となった記事の実際のURL"}
     ]
   },
   "autonomous_driving": {
     "summary": "今日時点での自動運転技術に関する注目トピックを2〜3文で",
     "highlights": [
-      {"topic": "企業名・技術名・地域など短いラベル", "detail": "具体的な動向の説明(事実ベース、1〜2文)"}
+      {"topic": "企業名・技術名・地域など短いラベル", "detail": "具体的な動向の説明(事実ベース、1〜2文)", "source_url": "情報源となった記事の実際のURL"}
     ]
   },
   "newborn_tip": {
@@ -52,6 +52,7 @@ Web検索ツールを使って、実際の最新の市場ニュースを踏ま�
 - investment.picksは3件程度。特定銘柄への投資を推奨する表現は避け、「注目されている理由」を客観的に紹介する形にすること。
 - これは金融アドバイスではないことを前提とした客観的な情報提供とすること。
 - autonomous_driving.highlightsは2〜3件程度。技術・企業・法規制・事故/安全性など幅広い切り口から選ぶこと。
+- source_urlは必ずWeb検索で実際に見つかった記事のURLをそのまま使うこと。推測やでっち上げのURLは絶対に使わないこと。該当する情報源が見つからない場合はsource_urlを空文字("")にすること。
 - 内容は毎日変化をつけ、同じような内容の繰り返しを避けること。`;
 
 async function generateContent() {
@@ -134,6 +135,7 @@ function renderHtml({ content, trashItems }) {
       <li>
         <strong>${escapeHtml(p.name)}</strong>（${escapeHtml(p.type)}）<br>
         <span class="reason">${escapeHtml(p.reason)}</span>
+        ${p.source_url ? `<br><a class="source-link" href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener">情報源を見る →</a>` : ""}
       </li>`
     )
     .join("\n");
@@ -146,6 +148,7 @@ function renderHtml({ content, trashItems }) {
       <li>
         <strong>${escapeHtml(h.topic)}</strong><br>
         <span class="reason">${escapeHtml(h.detail)}</span>
+        ${h.source_url ? `<br><a class="source-link" href="${escapeHtml(h.source_url)}" target="_blank" rel="noopener">情報源を見る →</a>` : ""}
       </li>`
     )
     .join("\n");
@@ -162,6 +165,8 @@ function renderHtml({ content, trashItems }) {
   section { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   h2 { font-size: 1.05rem; margin-top: 0; border-left: 4px solid #444; padding-left: 8px; }
   .reason { color: #555; font-size: 0.92rem; }
+  .source-link { color: #2563eb; font-size: 0.85rem; text-decoration: none; }
+  .source-link:hover { text-decoration: underline; }
   .warning { color: #b45309; font-size: 0.85rem; }
   .disclaimer { color: #888; font-size: 0.8rem; margin-top: 24px; }
   ul { padding-left: 1.2em; }
@@ -173,6 +178,7 @@ function renderHtml({ content, trashItems }) {
   <section>
     <h2>🗑 今日のゴミ出し(植木地区)</h2>
     <ul>${trashHtml}</ul>
+    ${IS_PLACEHOLDER_DATA ? '<p class="warning">⚠️ このデータは仮設定です。公式カレンダーで確認後、正式な内容に差し替えてください。</p>' : ""}
   </section>
 
   <section>
