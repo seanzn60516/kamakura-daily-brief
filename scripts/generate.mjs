@@ -58,7 +58,7 @@ Web検索ツールを使って、実際の最新の市場ニュースを踏ま�
 async function generateContent() {
   const response = await anthropic.messages.create({
     model: "claude-sonnet-5",
-    max_tokens: 4096,
+    max_tokens: 8192,
     tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
     messages: [{ role: "user", content: PROMPT }],
   });
