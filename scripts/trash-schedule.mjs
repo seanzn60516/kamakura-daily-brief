@@ -52,7 +52,7 @@ export function getTodayTrashItems(date = new Date()) {
   }
 
   if (items.length === 0) {
-    return ["この曜日の収集はありません(仮データ・要確認)"];
+    return ["この曜日の収集はありません"];
   }
   return items;
 }
